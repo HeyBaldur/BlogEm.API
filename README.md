@@ -1,5 +1,5 @@
 
-# BlogEm Open-Source Project [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+# BlogEm Open-Source Project API - ASP.NET Core [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ### BlogEm is an application to create content very similar to Medium, with the small difference that it is developed to encourage other developers to learn in a practical way the flow of an application in real life.
 
