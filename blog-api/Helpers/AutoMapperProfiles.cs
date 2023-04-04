@@ -11,6 +11,8 @@ namespace blog_api.Helpers
             CreateMap<User, UserReqDto>().ReverseMap();
             CreateMap<User, UserResDto>().ReverseMap();
             CreateMap<UserReqDto, UserResDto>().ReverseMap();
+            CreateMap<UserUpdateReqpDto, UserResDto>().ReverseMap();
+            CreateMap<UserUpdateReqpDto, User>().ReverseMap();
         }
     }
 }

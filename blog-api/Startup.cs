@@ -43,7 +43,7 @@ namespace blog_api
             // Add Automapper
             services.AddAutoMapper(typeof(Startup));
 
-            services.AddSingleton<UserService>();
+            services.AddScoped<IUserService, UserService>();
 
             services.AddControllers();
         }

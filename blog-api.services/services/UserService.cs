@@ -4,16 +4,14 @@ using blog_api.models.DTOs.Http;
 using blog_api.models.v1;
 using blog_api.services.Exceptions;
 using blog_api.services.Helpers;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace blog_api.services.services
 {
-    public class UserService 
+    public class UserService: IUserService
     {
         private readonly IMongoCollection<User> _users;
         private readonly IMapper _mapper;
@@ -29,12 +27,6 @@ namespace blog_api.services.services
             _mapper = mapper;
         }
 
-        public List<User> Get() =>
-            _users.Find(user => true).ToList();
-
-        public User Get(string id) =>
-            _users.Find<User>(user => user.Id == id).FirstOrDefault();
-
         /// <summary>
         /// Create a new user
         /// </summary>
@@ -44,13 +36,6 @@ namespace blog_api.services.services
         {
             try
             {
-                // Validate if the request has corrupted data
-                if (HasCorruptedProps(user))
-                {
-                    // Throw a new exception if there is information or any potential XSS attack
-                    throw new CorruptedException("The information contains corrupted information. Information has been saved and report has been generated.");
-                }
-
                 // Map the request to user
                 var userToRepo = _mapper.Map<User>(user);
 
@@ -72,37 +57,78 @@ namespace blog_api.services.services
             }
         }
 
-        public void Update(string id, User userIn) =>
-            _users.ReplaceOne(user => user.Id == id, userIn);
-
-        public void Remove(User userIn) =>
-            _users.DeleteOne(user => user.Id == userIn.Id);
-
-        public void Remove(string id) =>
-            _users.DeleteOne(user => user.Id == id);
-
         /// <summary>
-        /// Validate if the has corrupted data
+        /// Update user information
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        private bool HasCorruptedProps(UserReqDto user)
+        /// <exception cref="CathedException"></exception>
+        public async Task<UserResDto> UpdateAsync(UserUpdateReqpDto user)
         {
-            Type userType = user.GetType();
-            PropertyInfo[] properties = userType.GetProperties();
+            // TODO: Validate the passsword is correct
 
-            foreach (PropertyInfo property in properties)
+            User currUser = await GetUserAsync(user.Id).ConfigureAwait(false);
+
+            string email = string.Empty;
+
+            if (currUser == null)
             {
-                object value = property.GetValue(user);
-                bool xssResult = SanitizeHandler.SanitizePropForXss(value);
-                if (!xssResult)
-                {
-                    // Contains corrupted data
-                    return true;
-                }
+                throw new CathedException("User does not exist");
             }
 
-            return false;
+            // User wants to change email address
+            if (currUser.Email != user.Email)
+            {
+                email = (await EmailExist(user.Email).ConfigureAwait(false)) ? currUser.Email : user.Email;
+            }
+
+            // Replace the document except for the ID
+            var updateFilter = Builders<User>.Filter.Eq("_id", ObjectId.Parse(user.Id));
+
+            var replacement = new User
+            {
+                LastModification = DateTime.UtcNow,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhotoUrl = user.PhotoUrl,
+                UserName = user.UserName,
+                CreatedOn = currUser.CreatedOn,
+                Id = user.Id,
+                Email = email,
+                PasswordHash = currUser.PasswordHash,
+                PasswordSalt = currUser.PasswordSalt,
+                SecretPin = currUser.SecretPin
+            };
+
+            var options = new ReplaceOptions { IsUpsert = false };
+
+            var result = await _users.ReplaceOneAsync(updateFilter, replacement, options);
+
+            if (result.IsAcknowledged)
+            {
+                // Map the user to reponse
+                UserResDto response = _mapper.Map<UserResDto>(replacement);
+
+                return response;
+            }
+
+            return null;
         }
+
+        /// <summary>
+        /// Validate if the email exist
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        private async Task<bool> EmailExist(string email) => 
+            await _users.Find(user => user.Email == email).AnyAsync();
+
+        /// <summary>
+        /// Get user by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private async Task<User> GetUserAsync(string id) =>
+            await _users.Find(user => user.Id == id).FirstOrDefaultAsync();
     }
 }

@@ -1,8 +1,6 @@
 ﻿using blog_api.models.DTOs.Http;
-using blog_api.models.v1;
 using blog_api.services.services;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace blog_api.Controllers
@@ -11,28 +9,11 @@ namespace blog_api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
 
-        public UserController(UserService bookService)
+        public UserController(IUserService bookService)
         {
             _userService = bookService;
-        }
-
-        [HttpGet]
-        public ActionResult<List<User>> Get() =>
-            _userService.Get();
-
-        [HttpGet("{id:length(24)}", Name = "GetUser")]
-        public ActionResult<User> Get(string id)
-        {
-            var user = _userService.Get(id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return user;
         }
 
         /// <summary>
@@ -48,34 +29,17 @@ namespace blog_api.Controllers
             return Ok(response);
         }
 
-        [HttpPut("{id:length(24)}")]
-        public IActionResult Update(string id, User bookIn)
+        /// <summary>
+        /// Update a user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        [HttpPut("user")]
+        public async Task<IActionResult> Update(UserUpdateReqpDto user)
         {
-            var user = _userService.Get(id);
+            var result = await _userService.UpdateAsync(user);
 
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            _userService.Update(id, bookIn);
-
-            return NoContent();
-        }
-
-        [HttpDelete("{id:length(24)}")]
-        public IActionResult Delete(string id)
-        {
-            var user = _userService.Get(id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            _userService.Remove(id);
-
-            return NoContent();
+            return Ok(result);
         }
     }
 }
