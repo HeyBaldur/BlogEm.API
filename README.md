@@ -31,5 +31,22 @@ The technologies are a fundamental part of the project in order to work properly
 - MongoDb https://learn.mongodb.com/ 
 SQL Choose a folder where your UI and API will be. Both projects must be in the same folder. DO NOT create anything yet.
 
-If you are interested please join our discord channel here https://discord.gg/mWPWEWKd 
+## How to run the API locally?
+
+First of all you need download VS2022 Community Edition. https://visualstudio.microsoft.com/vs/ 
+- Download ASP.NET Core 3.1, 5.0 & 6.0
+- https://dotnet.microsoft.com/en-us/download/dotnet/3.1
+- https://dotnet.microsoft.com/en-us/download/dotnet/5.0
+- https://dotnet.microsoft.com/en-us/download/dotnet/6.0
+Once you have you localENV set up, go to <YOUR_LOCATION>\blog-api\blog-api open CMD or PowerShell window and run the following command
+
+```
+dotnet watch run
+```
+Important! Remember to install Mongo Compass in order to store your data https://www.mongodb.com/try/download/compass
+
+If you are interested please join our discord channel here 
+
+![https://discord.gg/mWPWEWKd](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)
+
 
