@@ -31,5 +31,7 @@ The technologies are a fundamental part of the project in order to work properly
 - MongoDb https://learn.mongodb.com/ 
 SQL Choose a folder where your UI and API will be. Both projects must be in the same folder. DO NOT create anything yet.
 
-If you are interested please join our discord channel here https://discord.gg/mWPWEWKd 
+If you are interested please join our discord channel here 
+
+![https://discord.gg/mWPWEWKd](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)
 
