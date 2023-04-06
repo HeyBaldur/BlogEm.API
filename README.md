@@ -3,6 +3,8 @@
 
 ### BlogEm is an application to create content very similar to Medium, with the small difference that it is developed to encourage other developers to learn in a practical way the flow of an application in real life.
 
+![image](https://user-images.githubusercontent.com/58003585/229857235-1f8581c7-bdac-4fdc-9298-df77f9b849a7.png)
+
 Initially, the idea of this project is that developers can participate in a real (open source) project in which they can gain experience, learn from different methodologies, good practices, understand design patterns and among other topics that are normally covered in a project in real life.
 As such, the project is totally free, any developer who is part of the team has access to the code and it's totally free.
 As such, this product is licensed under the MIT license which reads:
