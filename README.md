@@ -46,6 +46,7 @@ Once you have you localENV set up, go to <YOUR_LOCATION>\blog-api\blog-api open 
 dotnet watch run
 ```
 Important! Remember to install Mongo Compass in order to store your data https://www.mongodb.com/try/download/compass
+UI Repo: https://github.com/HeyBaldur/BlogEm.SPA
 
 If you are interested please join our discord channel here 
 
