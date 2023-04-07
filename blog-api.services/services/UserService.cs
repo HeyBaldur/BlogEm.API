@@ -4,9 +4,12 @@ using blog_api.models.DTOs.Http;
 using blog_api.models.v1;
 using blog_api.services.Exceptions;
 using blog_api.services.Helpers;
+using Microsoft.Security.Application;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace blog_api.services.services
@@ -36,8 +39,10 @@ namespace blog_api.services.services
         {
             try
             {
+                var cleanUser = SanitizeInput<UserReqDto>(user);
+
                 // Map the request to user
-                var userToRepo = _mapper.Map<User>(user);
+                var userToRepo = _mapper.Map<User>(cleanUser);
 
                 // Create a password hash and salt for the text plain password prop
                 PasswordManager.CreatePasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -67,7 +72,9 @@ namespace blog_api.services.services
         {
             // TODO: Validate the passsword is correct
 
-            User currUser = await GetUserAsync(user.Id).ConfigureAwait(false);
+            var cleanUser = SanitizeInput<UserUpdateReqpDto>(user);
+
+            User currUser = await GetUserAsync(cleanUser.Id).ConfigureAwait(false);
 
             string email = string.Empty;
 
@@ -77,9 +84,9 @@ namespace blog_api.services.services
             }
 
             // User wants to change email address
-            if (currUser.Email != user.Email)
+            if (currUser.Email != cleanUser.Email)
             {
-                email = (await EmailExist(user.Email).ConfigureAwait(false)) ? currUser.Email : user.Email;
+                email = (await EmailExist(cleanUser.Email).ConfigureAwait(false)) ? currUser.Email : cleanUser.Email;
             }
 
             // Replace the document except for the ID
@@ -88,12 +95,12 @@ namespace blog_api.services.services
             var replacement = new User
             {
                 LastModification = DateTime.UtcNow,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                PhotoUrl = user.PhotoUrl,
-                UserName = user.UserName,
+                FirstName = cleanUser.FirstName,
+                LastName = cleanUser.LastName,
+                PhotoUrl = cleanUser.PhotoUrl,
+                UserName = cleanUser.UserName,
                 CreatedOn = currUser.CreatedOn,
-                Id = user.Id,
+                Id = cleanUser.Id,
                 Email = email,
                 PasswordHash = currUser.PasswordHash,
                 PasswordSalt = currUser.PasswordSalt,
@@ -130,5 +137,35 @@ namespace blog_api.services.services
         /// <returns></returns>
         private async Task<User> GetUserAsync(string id) =>
             await _users.Find(user => user.Id == id).FirstOrDefaultAsync();
+
+        /// <summary>
+        /// SanitizeInput
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private static T SanitizeInput<T>(T data) where T : class
+        {
+            var sanitizer = new Ganss.Xss.HtmlSanitizer();
+            Type type = data.GetType();
+            PropertyInfo[] properties = type.GetProperties();
+            object[] sanitizedValues = new object[properties.Length];
+
+            for (int i = 0; i < properties.Length; i++)
+            {
+                if (properties[i].PropertyType == typeof(string))
+                {
+                    string stringValue = (string)properties[i].GetValue(data);
+                    string sanitized = sanitizer.Sanitize(stringValue);
+                    properties[i].SetValue(data, sanitized);
+                }
+                else
+                {
+                    properties[i].SetValue(data, properties[i].GetValue(data));
+                }
+            }
+
+            return data;
+        }
     }
 }
